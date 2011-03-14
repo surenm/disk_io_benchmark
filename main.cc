@@ -1,4 +1,15 @@
-#include "main.h"
+#include <iostream>
+#include <vector>
+#include <cstdlib>
+#include <cstring>
+#include <cerrno>
+#include <string>
+using namespace std;
+
+#include <unistd.h>
+#include <getopt.h>
+
+#include "utils.h"
 
 int main(int argc, char **argv) {
     int c ;
@@ -76,5 +87,9 @@ int main(int argc, char **argv) {
                	break;
         }
     }
+
+    int rc = do_IO(io_type, path, thread_count, block_size, blocks_count);
+
+    return 0;
 
 }
