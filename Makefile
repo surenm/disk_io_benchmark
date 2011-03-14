@@ -1,10 +1,10 @@
-CXXFLAGS =	-O2 -g  -fmessage-length=0
+CXXFLAGS =	-O2 -g  -fmessage-length=0  
 TARGET = disk_io_benchmark
 OBJS = *.o *.gch 
 all : $(TARGET)
 
 disk_io_benchmark:	main.o utils.o
-	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o utils.o -lpthread
+	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o utils.o -lpthread 
 	
 main.o : main.cc 
 	$(CXX) $(CXXFLAGS) -c main.cc 

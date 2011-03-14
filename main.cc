@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
                         blocks_count = atoi(optarg);
                         break;
                     case 5:
-                        block_size = atof(optarg);
+                        block_size = atoi(optarg);
                         break;
 
                     default:
