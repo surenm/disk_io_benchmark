@@ -25,8 +25,8 @@ void* read(void* data){
 	int length = job->block_size ;
 
 	char *s = (char *) malloc(length * sizeof(char));
-	for(int i = 0; i < job->blocks.size(); i++){
-		input.open(job->blocks[i].c_str());
+	for(int i = 0; i < job->block_names.size(); i++){
+		input.open(job->block_names[i].c_str());
 		while(input.good()){
 			input.read( s, length);
 		}
@@ -116,7 +116,7 @@ int do_IO( string io_action, string path, int thread_count, int block_size, int 
 
 		jobs[i].thread_id = i;
 		jobs[i].block_size = block_size ;
-		jobs[i].blocks = vector<string>(blocks_uri.begin()+i*blocks_per_thread,
+		jobs[i].block_names = vector<string>(blocks_uri.begin()+i*blocks_per_thread,
 				blocks_uri.begin() + (i+1)*blocks_per_thread);
 
 		struct Job *data = &jobs[i];
