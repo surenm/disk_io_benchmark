@@ -12,8 +12,27 @@ using namespace std;
 #include "utils.h"
 #define DEBUG
 
+void print_usage(void){
+	cout << "Usage : \n"
+			"	disk_io_benchamarks [options] path\n"
+			"Options: \n"
+			" --read        : if the IO operation to be performed is read.\n"
+			" --write       : if the IO operation to be performed is write.\n"
+			" --threads     : Number of threads of execution.\n"
+			" --help        : Print this help.\n"
+			" --blocks      : Number of blocks/files to be read/written.\n"
+			" --block_size  : Size of each block to be read/written.\n"
+			<< endl;
+	return ;
+}
+
 int main(int argc, char **argv) {
     int c ;
+
+    if(argc < 2){
+    	print_usage();
+    	return 0;
+    }
 
     // Type of Benchmark - read or write, default to read
     string io_type = "read";
@@ -40,10 +59,10 @@ int main(int argc, char **argv) {
         static struct option long_options[] = {
             { "read", no_argument, 0, 0 },
             { "write", no_argument, 0, 0 },
-            { "path", required_argument, 0, 0},
             { "threads", required_argument, 0, 0},
             { "blocks", required_argument, 0, 0},
             { "block_size", required_argument, 0, 0},
+            { "help", no_argument, 0 ,0},
             { 0, 0, 0, 0 }
         };
 
@@ -55,7 +74,7 @@ int main(int argc, char **argv) {
         switch(c){
             case 0:
 #ifdef DEBUG
-                cout << "Option - " << long_options[option_index].name ;
+            	cout << "Option - " << long_options[option_index].name ;
                 if(optarg)
                     cout << " : " << optarg ;
                 cout << endl ;
@@ -68,27 +87,31 @@ int main(int argc, char **argv) {
                     	io_type = string(long_options[option_index].name);
                         break;
                     case 2:
-						path = string(optarg);
-                        break;
-                    case 3:
                         thread_count = atoi(optarg);
                         break;
-                    case 4:
+                    case 3:
                         blocks_count = atoi(optarg);
                         break;
-                    case 5:
+                    case 4:
                         block_size = atoi(optarg);
                         break;
-
+                    case 5:
+                    	print_usage();
+                    	break;
                     default:
                         break;
                 }
-                break;
+            break;
+            case '?' :
+            	print_usage();
+            	break;
             default :
-               	break;
+               	abort;
         }
-    }
 
+    }
+    path = string(argv[optind]);
+    cout << "Path: " << path << endl;
     int rc = do_IO(io_type, path, thread_count, block_size, blocks_count);
 
     return 0;
