@@ -24,7 +24,7 @@ void* read_buffered(void* data){
 	ifstream input;
 
 	// conversion from MB to bytes
-	int length = job->block_size ;
+	int length = job->chunk_size ;
 
 	char *s = (char *) malloc(length * sizeof(char));
 	for(int i = 0; i < job->block_names.size(); i++){
@@ -45,7 +45,7 @@ void* write_buffered(void* data){
 void* read(void* data) {
 	Job *job = (Job *) data;
 
-	int length = job->block_size;
+	int length = job->chunk_size;
 
 	char *s = (char *) malloc(length * sizeof(char));
 	for (int i = 0; i < job->block_names.size(); i++) {
@@ -69,16 +69,20 @@ void* read(void* data) {
 void* write(void* data){
 	Job *job = (Job *) data;
 
-	char *s = (char *) malloc(1024 * sizeof(char));
+	int chunk_size = job->chunk_size ;
+
+	char *s = (char *) malloc(chunk_size * sizeof(char));
+
 	for (int i = 0; i < job->block_names.size(); i++) {
-		int length = job->block_size/1024;
+		int chunks = job->block_size / chunk_size + 1;
 		FILE* fptr = fopen(job->block_names[i].c_str(),"w+");
 		fclose(fptr);
 		size_t fd = open(job->block_names[i].c_str(), O_WRONLY | O_APPEND);
-		memset(s, '1', length*sizeof(char));
+		memset(s, '0', chunk_size*sizeof(char));
+
 		// Measure time for reading the file in entirety
 		time_t start_time = time(NULL);
-		while( write(fd, s, 1024) > 0 && length--);
+		while( write(fd, s, chunk_size) > 0 && chunks--);
 		time_t end_time = time(NULL);
 
 		job->elapsed_time += end_time - start_time;
@@ -116,7 +120,8 @@ vector<string> get_dir_listing(string path){
 	return files;
 }
 
-int do_IO( string io_action, string path, int thread_count, int block_size, int blocks_count ){
+int do_IO( string io_action, string path, int thread_count, int chunk_size,
+		int block_size, int blocks_count ){
 
 	// Thread Identifiers for each thread that is going to be spawn
 	vector<pthread_t> threads(thread_count);
@@ -187,6 +192,7 @@ int do_IO( string io_action, string path, int thread_count, int block_size, int 
 	for(int i=0; i<thread_count; i++){
 		jobs[i].thread_id = i;
 		jobs[i].block_size = block_size ;
+		jobs[i].chunk_size = chunk_size ;
 
 		end = start + min_blocks_per_thread ;
 		if(i < blocks_uri.size() % thread_count) end = end + 1 ;

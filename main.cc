@@ -20,8 +20,9 @@ void print_usage(void){
 			" --write       : if the IO operation to be performed is write.\n"
 			" --threads     : Number of threads of execution.\n"
 			" --help        : Print this help.\n"
-			" --blocks      : Number of blocks/files to be read/written.\n"
-			" --block_size  : Size of each block to be read/written.\n"
+			" --blocks      : Number of blocks/files to be written.\n"
+			" --block_size  : Size of each block to be written.\n"
+			" --chunk_size  : Size of each small chunk to be read/written"
 			<< endl;
 	return ;
 }
@@ -45,9 +46,13 @@ int main(int argc, char **argv) {
     // default 1
     int blocks_count = 1;
 
-    // Size of the block to be read in MB
-    // default 1 MB
-    int block_size = 1024*1024;
+    // Size of the each chunk to be read/written
+    // default 4 KB
+    int chunk_size = 4096;
+
+    // default block size to be read/written
+    // 100 MB
+    int block_size = 100 * 1024 *1024 ;
 
     // File/Directory location
     string path;
@@ -62,6 +67,7 @@ int main(int argc, char **argv) {
             { "threads", required_argument, 0, 0},
             { "blocks", required_argument, 0, 0},
             { "block_size", required_argument, 0, 0},
+            { "chunk_size", required_argument, 0, 0},
             { "help", no_argument, 0 ,0},
             { 0, 0, 0, 0 }
         };
@@ -96,6 +102,9 @@ int main(int argc, char **argv) {
                         block_size = atoi(optarg);
                         break;
                     case 5:
+                    	chunk_size = atoi(optarg);
+                    	break;
+                    case 6:
                     	print_usage();
                     	break;
                     default:
@@ -112,7 +121,7 @@ int main(int argc, char **argv) {
     }
     path = string(argv[optind]);
     cout << "Path: " << path << endl;
-    int rc = do_IO(io_type, path, thread_count, block_size, blocks_count);
+    int rc = do_IO(io_type, path, thread_count, chunk_size, block_size, blocks_count);
 
     return 0;
 
