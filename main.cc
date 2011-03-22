@@ -10,6 +10,7 @@ using namespace std;
 #include <getopt.h>
 
 #include "utils.h"
+#define DEBUG
 
 int main(int argc, char **argv) {
     int c ;
@@ -26,8 +27,8 @@ int main(int argc, char **argv) {
     int blocks_count = 1;
 
     // Size of the block to be read in MB
-    // default 64 MB
-    int block_size = 64;
+    // default 1 MB
+    int block_size = 1024*1024;
 
     // File/Directory location
     string path;
@@ -41,7 +42,7 @@ int main(int argc, char **argv) {
             { "write", no_argument, 0, 0 },
             { "path", required_argument, 0, 0},
             { "threads", required_argument, 0, 0},
-            { "blocks", optional_argument, 0, 0},
+            { "blocks", required_argument, 0, 0},
             { "block_size", required_argument, 0, 0},
             { 0, 0, 0, 0 }
         };

@@ -8,15 +8,17 @@
 #include <cstdlib>
 #include <ctime>
 #include <cerrno>
+#include <cstring>
 using namespace std;
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include "utils.h"
 
-void* read(void* data){
+void* read_buffered(void* data){
 	Job *job = (Job *) data;
 
 	ifstream input;
@@ -32,11 +34,61 @@ void* read(void* data){
 		}
 		input.close();
 	}
+	free(s);
+	pthread_exit(0);
+}
+
+void* write_buffered(void* data){
+	pthread_exit(NULL);
+}
+
+void* read(void* data) {
+	Job *job = (Job *) data;
+
+	int length = job->block_size;
+
+	char *s = (char *) malloc(length * sizeof(char));
+	for (int i = 0; i < job->block_names.size(); i++) {
+		size_t fd = open(job->block_names[i].c_str(), O_RDONLY);
+
+		// Measure time for reading the file in entirety
+		time_t start_time = time(NULL);
+		while( read(fd, s, length) > 0 );
+		time_t end_time = time(NULL);
+
+		job->elapsed_time += end_time - start_time;
+
+		close(fd);
+	}
+	free(s);
+	cout << "Time of execution of thread " << job->thread_id << " is "
+			<< job->elapsed_time << endl ;
 	pthread_exit(0);
 }
 
 void* write(void* data){
-	pthread_exit(NULL);
+	Job *job = (Job *) data;
+
+	char *s = (char *) malloc(1024 * sizeof(char));
+	for (int i = 0; i < job->block_names.size(); i++) {
+		int length = job->block_size/1024;
+		FILE* fptr = fopen(job->block_names[i].c_str(),"w+");
+		fclose(fptr);
+		size_t fd = open(job->block_names[i].c_str(), O_WRONLY | O_APPEND);
+		memset(s, '1', length*sizeof(char));
+		// Measure time for reading the file in entirety
+		time_t start_time = time(NULL);
+		while( write(fd, s, 1024) > 0 && length--);
+		time_t end_time = time(NULL);
+
+		job->elapsed_time += end_time - start_time;
+
+		close(fd);
+
+	}
+
+	free(s);
+	pthread_exit(0);
 }
 
 vector<string> get_dir_listing(string path){
@@ -69,14 +121,16 @@ int do_IO( string io_action, string path, int thread_count, int block_size, int 
 	// Thread Identifiers for each thread that is going to be spawn
 	vector<pthread_t> threads(thread_count);
 
-	int return_code ;
-
 	// List of all files to be totally read/written
 	vector<string> blocks_uri;
+
+	// Return code for various exit points in the code
+	int return_code ;
 
 	// Declare the Thread callback function pointer
 	void* (*thread_fp)(void*);
 
+	//Handle different types of IO actions
 	if(io_action == "read") {
 		// set the thread callback to read
 		thread_fp = &read;
@@ -100,24 +154,46 @@ int do_IO( string io_action, string path, int thread_count, int block_size, int 
 	else if (io_action == "write") {
 		// set the thread callback to write
 		thread_fp = &write;
+		struct stat _stat;
+		return_code = stat(path.c_str(), &_stat);
+		if (return_code) {
+			cout << "Could not open path " << path << endl;
+			exit(return_code);
+		}
+
+		if	(S_ISDIR(_stat.st_mode )){
+			for(int i=0; i<blocks_count; i++){
+				ostringstream ostr ; ostr << i << ".txt";
+				blocks_uri.push_back(path+ostr.str());
+			}
+		}
+
 	}
 
-	// The IO operation starts here
+	// If number of threads higher than the files to be read/write, reduce the
+	// thread count
 	if(blocks_uri.size() < thread_count) thread_count = blocks_uri.size();
 
-	int blocks_per_thread = blocks_uri.size() / thread_count ;
+	// calculate the blocks/files to be allocated per thread
+	int min_blocks_per_thread = blocks_uri.size() / thread_count;
 
-
+	// The IO operation starts here
 
 	// Spawn all the IO threads that we need
 	vector<struct Job> jobs(thread_count);
+	vector<string>::iterator start, end ;
+	start = blocks_uri.begin() ;
 
 	for(int i=0; i<thread_count; i++){
-
 		jobs[i].thread_id = i;
 		jobs[i].block_size = block_size ;
-		jobs[i].block_names = vector<string>(blocks_uri.begin()+i*blocks_per_thread,
-				blocks_uri.begin() + (i+1)*blocks_per_thread);
+
+		end = start + min_blocks_per_thread ;
+		if(i < blocks_uri.size() % thread_count) end = end + 1 ;
+		jobs[i].block_names = vector<string>(start, end);
+		start = end	;
+
+		jobs[i].elapsed_time = 0;
 
 		struct Job *data = &jobs[i];
 
@@ -128,6 +204,7 @@ int do_IO( string io_action, string path, int thread_count, int block_size, int 
 		}
 	}
 
+	time_t start_time = time(NULL);
 	// Wait for all the threads to complete
 	for(int i=0; i<thread_count; i++){
 		void *status ;
@@ -138,5 +215,10 @@ int do_IO( string io_action, string path, int thread_count, int block_size, int 
 		}
 	}
 	// The IO Operation ends here
+
+	time_t end_time = time(NULL);
+
+	cout << "Total time of threads execution "<< end_time - start_time << endl;
+
 	return 0;
 }
