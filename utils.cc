@@ -61,8 +61,6 @@ void* read(void* data) {
 		close(fd);
 	}
 	free(s);
-	cout << "Time of execution of thread " << job->thread_id << " is "
-			<< job->elapsed_time << endl ;
 	pthread_exit(0);
 }
 
@@ -117,11 +115,19 @@ vector<string> get_dir_listing(string path){
 		}
 	}
 
-	return files;
+	
+    return files;
+}
+
+inline long long get_file_size(string file_name){
+    //stat the file and get size
+    struct stat st ;
+    int return_code = stat(file_name.c_str(), &st);
+    return st.st_size;
 }
 
 int do_IO( string io_action, string path, int thread_count, int chunk_size,
-		int block_size, int blocks_count ){
+    	int block_size, int blocks_count ){
 
 	// Thread Identifiers for each thread that is going to be spawn
 	vector<pthread_t> threads(thread_count);
@@ -137,7 +143,8 @@ int do_IO( string io_action, string path, int thread_count, int chunk_size,
 
 	//Handle different types of IO actions
 	if(io_action == "read") {
-		// set the thread callback to read
+	
+        // set the thread callback to read
 		thread_fp = &read;
 
 		// Check if the @path given is a file or directory listing
@@ -172,7 +179,6 @@ int do_IO( string io_action, string path, int thread_count, int chunk_size,
 				blocks_uri.push_back(path+ostr.str());
 			}
 		}
-
 	}
 
 	// If number of threads higher than the files to be read/write, reduce the
@@ -224,7 +230,20 @@ int do_IO( string io_action, string path, int thread_count, int chunk_size,
 
 	time_t end_time = time(NULL);
 
-	cout << "Total time of threads execution "<< end_time - start_time << endl;
-
-	return 0;
+    int total_time_taken = end_time - start_time ; 
+    long long total_io_in_bytes = 0 ;
+    for(int i=0; i<blocks_uri.size(); i++){
+        total_io_in_bytes += get_file_size(blocks_uri[i]) ;
+    }
+    
+    cout << "-------------------------------------------------------------------\n"
+            "Result :\n" 
+            "Total I/O done      : " << total_io_in_bytes/(1024*1024) << " MB \n"
+            "Total time taken    : " << total_time_taken << " seconds \n" 
+            "Disk throughput     : " << double(total_io_in_bytes) / ( 1024*1024*total_time_taken) << " MB/s\n" 
+            "-------------------------------------------------------------------\n"
+        << endl ;
+    return 0;
 }
+
+

@@ -10,7 +10,6 @@ using namespace std;
 #include <getopt.h>
 
 #include "utils.h"
-#define DEBUG
 
 void print_usage(void){
 	cout << "Usage : \n"
@@ -130,8 +129,9 @@ int main(int argc, char **argv) {
 
     path = string(argv[optind]);
     if(path[path.size()-1] != '/') path += '/' ;
+#ifdef DEBUG 
     cout << "Path: " << path << endl;
-
+#endif
     int rc = do_IO(io_type, path, thread_count, chunk_size, block_size, blocks_count);
 
     return 0;
