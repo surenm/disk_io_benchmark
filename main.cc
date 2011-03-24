@@ -22,21 +22,25 @@ void print_usage(void){
 			" --help        : Print this help.\n"
 			" --blocks      : Number of blocks/files to be written.\n"
 			" --block_size  : Size of each block to be written.\n"
-			" --chunk_size  : Size of each small chunk to be read/written"
+			" --chunk_size  : Size of each small chunk to be read/written\n"
+			" --buffered    : Does a buffered version of IO\n"
 			<< endl;
 	return ;
 }
 
 int main(int argc, char **argv) {
-    int c ;
 
-    if(argc < 2){
+	if(argc < 2){
     	print_usage();
     	return 0;
     }
 
     // Type of Benchmark - read or write, default to read
     string io_type = "read";
+
+    // File/Directory location
+    string path;
+
 
     // Number of threads
     // default 1
@@ -54,8 +58,9 @@ int main(int argc, char **argv) {
     // 100 MB
     int block_size = 100 * 1024 *1024 ;
 
-    // File/Directory location
-    string path;
+    int c ;
+
+    bool buffered = false ;
 
     //Generic argument parser code
     while(1){
@@ -68,6 +73,7 @@ int main(int argc, char **argv) {
             { "blocks", required_argument, 0, 0},
             { "block_size", required_argument, 0, 0},
             { "chunk_size", required_argument, 0, 0},
+            { "buffered", no_argument, 0, 0},
             { "help", no_argument, 0 ,0},
             { 0, 0, 0, 0 }
         };
@@ -105,6 +111,8 @@ int main(int argc, char **argv) {
                     	chunk_size = atoi(optarg);
                     	break;
                     case 6:
+                    	buffered = true;
+                    case 7:
                     	print_usage();
                     	break;
                     default:
@@ -119,8 +127,11 @@ int main(int argc, char **argv) {
         }
 
     }
+
     path = string(argv[optind]);
+    if(path[path.size()-1] != '/') path += '/' ;
     cout << "Path: " << path << endl;
+
     int rc = do_IO(io_type, path, thread_count, chunk_size, block_size, blocks_count);
 
     return 0;
