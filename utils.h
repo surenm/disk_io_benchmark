@@ -14,7 +14,7 @@ struct Job {
 int do_IO( string io_action, string path, int thread_count, int chunk_size,
 		int block_size, int blocks_count );
 
-long long get_file_size(string file_name);
+unsigned long long get_file_size(string file_name);
 
 vector<string> get_dir_listing(string path);
 

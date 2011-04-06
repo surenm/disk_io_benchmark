@@ -72,7 +72,7 @@ void* write(void* data){
 	char *s = (char *) malloc(chunk_size * sizeof(char));
 
 	for (int i = 0; i < job->block_names.size(); i++) {
-		int chunks = job->block_size / chunk_size + 1;
+		unsigned long long chunks = job->block_size / chunk_size + 1;
 		FILE* fptr = fopen(job->block_names[i].c_str(),"w+");
 		fclose(fptr);
 		size_t fd = open(job->block_names[i].c_str(), O_WRONLY | O_APPEND);
@@ -119,7 +119,7 @@ vector<string> get_dir_listing(string path){
     return files;
 }
 
-inline long long get_file_size(string file_name){
+inline unsigned long long get_file_size(string file_name){
     //stat the file and get size
     struct stat st ;
     int return_code = stat(file_name.c_str(), &st);
@@ -231,7 +231,7 @@ int do_IO( string io_action, string path, int thread_count, int chunk_size,
 	time_t end_time = time(NULL);
 
     int total_time_taken = end_time - start_time ; 
-    long long total_io_in_bytes = 0 ;
+    unsigned long long total_io_in_bytes = 0 ;
     for(int i=0; i<blocks_uri.size(); i++){
         total_io_in_bytes += get_file_size(blocks_uri[i]) ;
     }

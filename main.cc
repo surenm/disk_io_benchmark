@@ -40,7 +40,6 @@ int main(int argc, char **argv) {
     // File/Directory location
     string path;
 
-
     // Number of threads
     // default 1
     int thread_count = 1;
@@ -55,7 +54,7 @@ int main(int argc, char **argv) {
 
     // default block size to be read/written
     // 100 MB
-    int block_size = 100 * 1024 *1024 ;
+    unsigned long long block_size = 100 * 1024 *1024 ;
 
     int c ;
 
@@ -104,7 +103,7 @@ int main(int argc, char **argv) {
                         blocks_count = atoi(optarg);
                         break;
                     case 4:
-                        block_size = atoi(optarg);
+                        block_size = atol(optarg);
                         break;
                     case 5:
                     	chunk_size = atoi(optarg);
