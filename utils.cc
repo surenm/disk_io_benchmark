@@ -126,7 +126,7 @@ inline unsigned long long get_file_size(string file_name){
     return st.st_size;
 }
 
-int do_IO( string io_action, vector<string> path, int thread_count, int chunk_size,
+int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_size,
     	unsigned long long block_size, int blocks_count ){
 
 	// Thread Identifiers for each thread that is going to be spawn
