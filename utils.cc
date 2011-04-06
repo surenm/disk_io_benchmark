@@ -135,6 +135,9 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
 	// List of all files to be totally read/written
 	vector<string> blocks_uri;
 
+    // Throughput for each thread 
+    vector<double> throughput;
+
 	// Return code for various exit points in the code
 	int return_code ;
 
@@ -246,6 +249,15 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
     for(int i=0; i<blocks_uri.size(); i++){
         total_io_in_bytes += get_file_size(blocks_uri[i]) ;
     }
+
+    for(int i=0; i<thread_count; i++){
+        unsigned long long total_io_done_this_thread = 0;
+        for(int j=0; j < jobs[i].block_names.size();  j++){
+            total_io_done_this_thread += get_file_size(jobs[i].block_names[j]);
+        }
+        throughput.push_back(double(total_io_done_this_thread)/(jobs[i].elapsed_time*1024*1024));
+    }
+
     
     cout << "-------------------------------------------------------------------\n" 
             "Results for Disk I/O performance run :\n"
@@ -254,8 +266,12 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
             "Total time taken    : " << total_time_taken << " seconds \n" 
             "Disk throughput     : " << double(total_io_in_bytes) / ( 1024*1024*total_time_taken) << " MB/s\n" 
             "Threads             : " << thread_count << "\n"
-            "-------------------------------------------------------------------\n"
-        << endl ;
+            "Throughputs for individual threads \n";
+
+    for(int i=0; i<throughput.size(); i++){
+        cout << "Thread #" << i << ": " << throughput[i] << " MB/s "<<endl ;
+    }
+    cout << "--------------------------------------------------------------------\n";
     return 0;
 }
 
