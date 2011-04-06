@@ -236,11 +236,13 @@ int do_IO( string io_action, string path, int thread_count, int chunk_size,
         total_io_in_bytes += get_file_size(blocks_uri[i]) ;
     }
     
-    cout << "-------------------------------------------------------------------\n"
-            "Result :\n" 
+    cout << "-------------------------------------------------------------------\n" 
+            "Results for Disk I/O performance run :\n"
+            "I/O operation       : " << io_action << ".\n" 
             "Total I/O done      : " << total_io_in_bytes/(1024*1024) << " MB \n"
             "Total time taken    : " << total_time_taken << " seconds \n" 
             "Disk throughput     : " << double(total_io_in_bytes) / ( 1024*1024*total_time_taken) << " MB/s\n" 
+            "Threads             : " << thread_count << "\n"
             "-------------------------------------------------------------------\n"
         << endl ;
     return 0;
