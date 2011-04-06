@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
 
     for(int index = optind; index < argc; index++){
         
-        string _path = string(argv[optind]);
+        string _path = string(argv[index]);
         if(_path[_path.size()-1] != '/') _path += '/' ;
         path.push_back(_path);
         
