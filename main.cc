@@ -13,7 +13,7 @@ using namespace std;
 
 void print_usage(void){
 	cout << "Usage : \n"
-			"	disk_io_benchamarks [options] path\n"
+			"	disk_io_benchamarks [options] path[s]\n"
 			"Options: \n"
 			" --read        : if the IO operation to be performed is read.\n"
 			" --write       : if the IO operation to be performed is write.\n"
@@ -38,7 +38,7 @@ int main(int argc, char **argv) {
     string io_type = "read";
 
     // File/Directory location
-    string path;
+    vector<string> path;
 
     // Number of threads
     // default 1
@@ -126,10 +126,17 @@ int main(int argc, char **argv) {
 
     }
 
-    path = string(argv[optind]);
-    if(path[path.size()-1] != '/') path += '/' ;
+    for(int index = optind; index < argc; index++){
+        
+        string _path = string(argv[optind]);
+        if(_path[_path.size()-1] != '/') _path += '/' ;
+        path.push_back(_path);
+        
+    }
 #ifdef DEBUG 
-    cout << "Path: " << path << endl;
+    cout << "Path(s): " << endl ;
+    for(int i=0; i<path.size(); i++)
+        cout  << path[i] << endl;
 #endif
     int rc = do_IO(io_type, path, thread_count, chunk_size, block_size, blocks_count);
 

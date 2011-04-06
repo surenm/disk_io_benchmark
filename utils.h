@@ -11,7 +11,7 @@ struct Job {
 	time_t elapsed_time ;
 };
 
-int do_IO( string io_action, string path, int thread_count, int chunk_size,
+int do_IO( string io_action, vector<string> path, int thread_count, int chunk_size,
 		unsigned long long block_size, int blocks_count );
 
 unsigned long long get_file_size(string file_name);
