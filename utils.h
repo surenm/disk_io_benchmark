@@ -12,7 +12,7 @@ struct Job {
 };
 
 int do_IO( string io_action, string path, int thread_count, int chunk_size,
-		int block_size, int blocks_count );
+		unsigned long long block_size, int blocks_count );
 
 unsigned long long get_file_size(string file_name);
 
