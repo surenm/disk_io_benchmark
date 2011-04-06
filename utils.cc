@@ -147,37 +147,48 @@ int do_IO( string io_action, vector<string> path, int thread_count, int chunk_si
         // set the thread callback to read
 		thread_fp = &read;
 
-		// Check if the @path given is a file or directory listing
-		// Get the directory listing; if its a file just add that file alone
-		// as the file listing
-		struct stat _stat ;
-		return_code = stat(path.c_str(), &_stat);
-		if(return_code){
-			cout << "Could not open path " << path << endl;
-			exit(return_code);
-		}
+        for( int i=0; i<paths.size(); i++){
 
-		if(S_ISDIR(_stat.st_mode ))
-			blocks_uri = get_dir_listing(path);
-		else
-			blocks_uri.push_back(path);
+            string path = paths[i];
+            // Check if the @path given is a file or directory listing
+            // Get the directory listing; if its a file just add that file alone
+            // as the file listing
+            struct stat _stat ;
+            return_code = stat(path.c_str(), &_stat);
+            if(return_code){
+                cout << "Could not open path " << path << endl;
+                exit(return_code);
+            }
+
+            if(S_ISDIR(_stat.st_mode )){
+                vector<string> append_vector = get_dir_listing(path);
+                blocks_uri.insert(blocks_uri.end(), append_vector.begin(), append_vector.end());
+            }
+            else
+                blocks_uri.push_back(path);
+        }
 	}
 
 	else if (io_action == "write") {
 		// set the thread callback to write
 		thread_fp = &write;
-		struct stat _stat;
-		return_code = stat(path.c_str(), &_stat);
-		if (return_code) {
-			cout << "Could not open path " << path << endl;
-			exit(return_code);
-		}
 
-		if	(S_ISDIR(_stat.st_mode )){
-			for(int i=0; i<blocks_count; i++){
-				ostringstream ostr ; ostr << i << ".txt";
-				blocks_uri.push_back(path+ostr.str());
-			}
+        for( int k=0; k<paths.size(); k++){
+                string path = paths[k];
+
+                struct stat _stat;
+                return_code = stat(path.c_str(), &_stat);
+                if (return_code) {
+                    cout << "Could not open path " << path << endl;
+                    exit(return_code);
+                }
+                if	(S_ISDIR(_stat.st_mode )){
+
+                for(int i=0; i<blocks_count; i++){
+                    ostringstream ostr ; ostr << i << ".txt";
+                    blocks_uri.push_back(path+ostr.str());
+                }
+            }
 		}
 	}
 
