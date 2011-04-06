@@ -6,7 +6,7 @@ using namespace std;
 struct Job {
 	int thread_id ;
 	vector<string> block_names;
-	int block_size;
+	unsigned long long block_size;
 	int chunk_size;
 	time_t elapsed_time ;
 };
