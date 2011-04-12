@@ -252,9 +252,12 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
 
     for(int i=0; i<thread_count; i++){
         unsigned long long total_io_done_this_thread = 0;
+        cerr << "Thread #" << i << ":\n" ;
         for(int j=0; j < jobs[i].block_names.size();  j++){
             total_io_done_this_thread += get_file_size(jobs[i].block_names[j]);
+            cerr << jobs[i].block_names[j] << endl;
         }
+        
         throughput.push_back(double(total_io_done_this_thread)/(jobs[i].elapsed_time*1024*1024));
     }
 
@@ -272,6 +275,7 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
         cout << "Thread #" << i << ": " << throughput[i] << " MB/s "<<endl ;
     }
     cout << "--------------------------------------------------------------------\n";
+
     return 0;
 }
 
