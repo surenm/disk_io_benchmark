@@ -12,7 +12,7 @@ using namespace std;
 #include "utils.h"
 
 void print_usage(void){
-	cout << "Usage : \n"
+	cerr << "Usage : \n"
 			"	disk_io_benchamarks [options] path[s]\n"
 			"Options: \n"
 			" --read        : if the IO operation to be performed is read.\n"

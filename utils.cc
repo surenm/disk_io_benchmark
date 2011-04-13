@@ -97,7 +97,7 @@ vector<string> get_dir_listing(string path){
 	// path is already a directory, no need to check
 	DIR* dir = opendir(path.c_str());
 	if(dir == NULL) {
-		cout << "Error " << errno << " opening " << path << endl;
+		cerr << "Error " << errno << " opening " << path << endl;
 		exit(errno);
 	}
 
@@ -159,7 +159,7 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
             struct stat _stat ;
             return_code = stat(path.c_str(), &_stat);
             if(return_code){
-                cout << "Could not open path " << path << endl;
+                cerr << "Could not open path " << path << endl;
                 exit(return_code);
             }
 
@@ -182,7 +182,7 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
                 struct stat _stat;
                 return_code = stat(path.c_str(), &_stat);
                 if (return_code) {
-                    cout << "Could not open path " << path << endl;
+                    cerr << "Could not open path " << path << endl;
                     exit(return_code);
                 }
                 if	(S_ISDIR(_stat.st_mode )){
@@ -225,7 +225,7 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
 
 		return_code = pthread_create(&threads[i], NULL, thread_fp, (void *)(data));
 		if(return_code) {
-			cout << "Error in creating thread " << i << endl;
+			cerr << "Error in creating thread " << i << endl;
 			exit(-1);
 		}
 	}
@@ -236,7 +236,7 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
 		void *status ;
 		return_code = pthread_join(threads[i], &status);
 		if(return_code) {
-			cout << "Could not join thread " << i << endl;
+			cerr << "Could not join thread " << i << endl;
 			exit(-1);
 		}
 	}
@@ -244,37 +244,47 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
 
 	time_t end_time = time(NULL);
 
+    // Do some non sense and print the output in csv format
+
     int total_time_taken = end_time - start_time ; 
-    unsigned long long total_io_in_bytes = 0 ;
+    double total_io = 0 ;
     for(int i=0; i<blocks_uri.size(); i++){
-        total_io_in_bytes += get_file_size(blocks_uri[i]) ;
+        total_io += double(get_file_size(blocks_uri[i]))/(1024*1024) ;
     }
+    double overall_throughput = total_io/total_time_taken;
 
     for(int i=0; i<thread_count; i++){
-        unsigned long long total_io_done_this_thread = 0;
-        cerr << "Thread #" << i << ":\n" ;
+        double total_io_done_this_thread = 0;
         for(int j=0; j < jobs[i].block_names.size();  j++){
-            total_io_done_this_thread += get_file_size(jobs[i].block_names[j]);
-            cerr << jobs[i].block_names[j] << endl;
+            total_io_done_this_thread += double(get_file_size(jobs[i].block_names[j]))/(1024*1024);
         }
-        
-        throughput.push_back(double(total_io_done_this_thread)/(jobs[i].elapsed_time*1024*1024));
+        throughput.push_back(total_io_done_this_thread/jobs[i].elapsed_time);
     }
 
+    cout << "I/O operation ,Chunk size(in Bytes), Total I/O done (in MB), Total time taken"
+            "(in seconds), Threads used, Number of disks, Overall Throughput" 
+            " (in MB/s ), " ;
+
+    for(int i=0; i<thread_count; i++){
+        cout <<"Thread #" << i+1 << "(in MB/s), " ;
+        if( i < paths.size()-1 ) cout << ", " ;
+    }
+    cout << endl ;
+
+    cout << io_action << ", " 
+         << chunk_size << ", "
+         << total_io << ", " 
+         << total_time_taken << ", "
+         << thread_count << ", "
+         << paths.size() << ", "
+         << overall_throughput << ", ";
     
-    cout << "-------------------------------------------------------------------\n" 
-            "Results for Disk I/O performance run :\n"
-            "I/O operation       : " << io_action << ".\n" 
-            "Total I/O done      : " << total_io_in_bytes/(1024*1024) << " MB \n"
-            "Total time taken    : " << total_time_taken << " seconds \n" 
-            "Disk throughput     : " << double(total_io_in_bytes) / ( 1024*1024*total_time_taken) << " MB/s\n" 
-            "Threads             : " << thread_count << "\n"
-            "Throughputs for individual threads \n";
-
-    for(int i=0; i<throughput.size(); i++){
-        cout << "Thread #" << i << ": " << throughput[i] << " MB/s "<<endl ;
+    for( int i=0; i<thread_count; i++){
+        cout << throughput[i] ;
+        if( i < thread_count - 1 ) cout <<", ";
     }
-    cout << "--------------------------------------------------------------------\n";
+
+    cout << endl;
 
     return 0;
 }
