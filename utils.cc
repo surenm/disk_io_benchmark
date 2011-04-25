@@ -266,7 +266,7 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
             " (in MB/s ), " ;
 
     for(int i=0; i<thread_count; i++){
-        cout <<"Thread #" << i+1 << "(in MB/s), " ;
+        cout <<"Thread #" << i+1 << "(in MB/s)" ;
         if( i < paths.size()-1 ) cout << ", " ;
     }
     cout << endl ;
