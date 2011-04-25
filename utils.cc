@@ -261,16 +261,6 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
         throughput.push_back(total_io_done_this_thread/jobs[i].elapsed_time);
     }
 
-    cout << "I/O operation ,Chunk size(in Bytes), Total I/O done (in MB), Total time taken"
-            "(in seconds), Threads used, Number of disks, Overall Throughput" 
-            " (in MB/s ), " ;
-
-    for(int i=0; i<thread_count; i++){
-        cout <<"Thread #" << i+1 << "(in MB/s)" ;
-        if( i < paths.size()-1 ) cout << ", " ;
-    }
-    cout << endl ;
-
     cout << io_action << ", " 
          << chunk_size << ", "
          << total_io << ", " 
