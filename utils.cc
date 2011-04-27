@@ -261,17 +261,17 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
         throughput.push_back(total_io_done_this_thread/jobs[i].elapsed_time);
     }
 
-    cout << io_action << ", " 
-         << chunk_size << ", "
-         << total_io << ", " 
-         << total_time_taken << ", "
-         << thread_count << ", "
-         << paths.size() << ", "
-         << overall_throughput << ", ";
+    cout << io_action << ","
+         << chunk_size << ","
+         << total_io << ","
+         << total_time_taken << ","
+         << thread_count << ","
+         << paths.size() << ","
+         << overall_throughput << ",";
     
     for( int i=0; i<thread_count; i++){
         cout << throughput[i] ;
-        if( i < thread_count - 1 ) cout <<", ";
+        if( i < thread_count - 1 ) cout <<",";
     }
 
     cout << endl;
