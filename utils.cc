@@ -81,11 +81,10 @@ void* write(void* data){
 		// Measure time for reading the file in entirety
 		time_t start_time = time(NULL);
 		while( write(fd, s, chunk_size) > 0 && chunks--);
+		close(fd);
 		time_t end_time = time(NULL);
 
 		job->elapsed_time += end_time - start_time;
-
-		close(fd);
 
 	}
 
