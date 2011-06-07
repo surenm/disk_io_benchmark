@@ -275,9 +275,9 @@ int do_IO( string io_action, vector<string> paths, int thread_count, int chunk_s
     cout << ",";
     for( int i=0; i<thread_count; i++){
     	for(int j = 0; j < jobs[i].block_names.size(); j++){
-    		cout << jobs[i].block_names[j] << " " ;
+    		cout << jobs[i].block_names[j] << ":" ;
     	}
-    	if( i < thread_count - 1) cout << "- ";
+    	if( i < thread_count - 1) cout << "-";
     }
 
     cout << endl;
